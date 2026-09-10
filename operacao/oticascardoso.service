@@ -23,6 +23,7 @@ Group=deploy
 WorkingDirectory=/var/www/projetos/Oticas-Cardoso
 Environment=NODE_ENV=production
 Environment=PORT=5184
+Environment=HOST=127.0.0.1
 
 # O endereço público (canonical, JSON-LD, sitemap, robots) vive FORA do
 # repositório, no .env que o criar-site.sh escreve. O `-` faz o serviço subir

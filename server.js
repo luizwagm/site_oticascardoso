@@ -18,6 +18,14 @@ const ROOT = __dirname;
    nao consegue defini-la e as provas nao tem como subir numa porta propria —
    teriam de usar a 5184 e conversariam com o site que ja esta no ar. */
 const PORT = Number(process.env.PORT) || 5184;
+
+/* ESCUTA SÓ EM 127.0.0.1, e isso é segurança, não detalhe.
+   A versão anterior chamava `listen(PORT)` sem endereço, e o Node escuta em
+   TODAS as interfaces. O site respondia direto em http://<IP-do-servidor>:5184
+   — por fora do nginx, sem TLS e sem os cabeçalhos dele — e o login do painel
+   trafegaria por ali em texto puro. Quem deve falar com o mundo é o nginx; o
+   Node só precisa ouvir a máquina. */
+const HOST = process.env.HOST || "127.0.0.1";
 const UPLOAD_DIR = path.join(ROOT, "assets", "img", "uploads");
 fs.mkdirSync(path.join(ROOT, "data"), { recursive: true });
 fs.mkdirSync(UPLOAD_DIR, { recursive: true });
@@ -637,7 +645,7 @@ http.createServer(async (req, res) => {
     res.writeHead(200, { "Content-Type": MIME[path.extname(file)] || "application/octet-stream" });
     res.end(fs.readFileSync(file));
   } catch (e) { json(res, 500, { error: e.message }); }
-}).listen(PORT, () => {
+}).listen(PORT, HOST, () => {
   console.log(`\n  Óticas Cardoso — site + gerenciador`);
   console.log(`  · Site:   http://localhost:${PORT}/`);
   console.log(`  · Painel: http://localhost:${PORT}/admin/  (senha inicial: cardoso-admin)`);

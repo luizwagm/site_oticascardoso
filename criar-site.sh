@@ -115,22 +115,70 @@ fi
 # ======================================================================
 echo "2/7  Conferindo a porta $PORTA"
 
-DONO=$(ss -ltnp 2>/dev/null | grep -E "127\.0\.0\.1:$PORTA |:::$PORTA |0\.0\.0\.0:$PORTA " || true)
-if [ -n "$DONO" ]; then
-  if echo "$DONO" | grep -q "$RAIZ" || systemctl is-active --quiet "$SERVICO.service" 2>/dev/null; then
-    verde "     porta $PORTA já é do $SERVICO.service — reinstalação, tudo bem"
-  else
-    vermelho "     a porta $PORTA já está ocupada por OUTRO processo:"
-    echo "$DONO" | sed 's/^/       /'
-    vermelho "     se eu seguisse, o nginx repassaria para o site do vizinho"
-    vermelho "     e você veria a página DELE neste domínio, com 200 e sem erro."
-    echo
-    echo "     Escolha uma porta livre e passe como 2º argumento:"
-    echo "       ss -ltnp | grep -oP ':\\K51[0-9]{2}' | sort -u"
-    exit 1
-  fi
-else
+# --------------------------------------------------------------------------
+# QUEM FILTRA É O ss, NÃO UM grep SOBRE O ENDEREÇO
+#
+# A primeira versão fazia `ss -ltnp | grep` procurando três formatos de
+# endereço: `127.0.0.1:PORTA`, `0.0.0.0:PORTA` e `:::PORTA`. Um processo que
+# escuta em todas as interfaces aparece como `*:PORTA` ou `[::]:PORTA` — um
+# quarto e um quinto formato. O grep não achou, o script disse "porta livre"
+# com a porta ocupada, e o serviço morreu em seguida com EADDRINUSE.
+#
+# `ss "sport = :PORTA"` pede ao próprio ss para filtrar pela porta, em
+# qualquer formato de endereço que ele use. Não há o que adivinhar.
+# --------------------------------------------------------------------------
+OCUPANTES=$(ss -H -ltnp "sport = :$PORTA" 2>/dev/null || true)
+
+if [ -z "$OCUPANTES" ]; then
   verde "     porta $PORTA livre"
+else
+  # --------------------------------------------------------------------------
+  # E NÃO BASTA SABER QUE ESTÁ OCUPADA: É PRECISO SABER POR QUEM
+  #
+  # São três casos, e cada um pede uma coisa diferente:
+  #   · o próprio serviço     → reinstalação, segue normal
+  #   · ESTE site, mas fora   → um `node server.js` rodado à mão; o serviço
+  #     do systemd                entra em laço de EADDRINUSE, e o /saude
+  #                               responde do processo errado, parecendo que
+  #                               está tudo bem. Foi exatamente o que houve.
+  #   · outro site            → vizinho; NUNCA encerrar, trocar de porta
+  #
+  # A pasta de trabalho do processo (/proc/PID/cwd) é o que separa o segundo
+  # caso do terceiro. O nome do processo não serve: todos os sites do servidor
+  # são `node server.js`, com o mesmo usuário.
+  # --------------------------------------------------------------------------
+  PID_SERVICO=$(systemctl show -p MainPID --value "$SERVICO.service" 2>/dev/null || echo 0)
+
+  for PID in $(echo "$OCUPANTES" | grep -oP 'pid=\K[0-9]+' | sort -u); do
+    PASTA=$(readlink "/proc/$PID/cwd" 2>/dev/null || echo "?")
+    QUANDO=$(ps -o lstart= -p "$PID" 2>/dev/null | sed 's/^ *//')
+
+    if [ "$PID" = "$PID_SERVICO" ]; then
+      verde "     porta $PORTA é do $SERVICO.service (PID $PID) — reinstalação, tudo bem"
+
+    elif [ "$PASTA" = "$RAIZ" ]; then
+      vermelho "     a porta $PORTA está com ESTE MESMO site, mas rodando FORA do systemd:"
+      echo "       PID $PID, iniciado em $QUANDO, pasta $PASTA"
+      echo
+      echo "     Provavelmente um 'node server.js' rodado à mão. Enquanto ele existir,"
+      echo "     o serviço não consegue abrir a porta e fica reiniciando a cada 3s —"
+      echo "     e o /saude responde deste processo, parecendo que está tudo bem."
+      echo
+      echo "     Encerre-o e rode de novo:"
+      echo "       sudo kill $PID && sudo systemctl restart $SERVICO && sudo ./criar-site.sh"
+      exit 1
+
+    else
+      vermelho "     a porta $PORTA está ocupada por OUTRO site:"
+      echo "       PID $PID, pasta $PASTA"
+      vermelho "     se eu seguisse, o nginx repassaria para ele e você veria a página"
+      vermelho "     DELE neste domínio, com 200 e sem erro. NÃO encerre esse processo."
+      echo
+      echo "     Escolha uma porta livre e passe como 2º argumento:"
+      echo "       ss -H -ltn | grep -oP ':\\K51[0-9]{2}(?= )' | sort -u"
+      exit 1
+    fi
+  done
 fi
 
 # ======================================================================
@@ -197,6 +245,17 @@ if ! systemctl is-active --quiet "$SERVICO.service"; then
   vermelho "     o serviço NÃO sobe. Últimas linhas do journal:"
   journalctl -u "$SERVICO" -n 15 --no-pager 2>/dev/null | sed 's/^/       /'
   echo
+
+  # Quando o journal já diz a causa, dizê-la primeiro. A lista genérica abaixo
+  # mandou procurar pasta e versão do Node num erro que era porta ocupada.
+  if journalctl -u "$SERVICO" -n 40 --no-pager 2>/dev/null | grep -q EADDRINUSE; then
+    vermelho "     CAUSA: a porta $PORTA já está em uso (EADDRINUSE)."
+    echo "     Veja quem é — e só encerre se a pasta for $RAIZ:"
+    echo "       sudo ss -ltnp 'sport = :$PORTA'"
+    echo "       sudo readlink /proc/<PID>/cwd"
+    exit 1
+  fi
+
   echo "     As causas, na ordem em que costumam acontecer:"
   echo "       1. pasta de escrita faltando — 'ENOENT: mkdir' ou '226/NAMESPACE'"
   echo "          (o passo 3 já as cria; confira o dono com: ls -ld $RAIZ/data)"

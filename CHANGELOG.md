@@ -3,6 +3,34 @@
 O número do meio sobe quando entra funcionalidade; o último, quando entra
 correção. O primeiro não muda.
 
+## 1.1.2 — 10/09/2026
+
+**Corrigido — achados na primeira instalação no servidor**
+
+- **O `criar-site.sh` disse "porta 5184 livre" com a porta ocupada.** Ele
+  fazia `ss | grep` procurando três formatos de endereço (`127.0.0.1:`,
+  `0.0.0.0:`, `:::`). Um processo que escuta em todas as interfaces aparece
+  como `*:5184` ou `[::]:5184` — nenhum dos três. Agora quem filtra é o
+  próprio `ss` (`sport = :5184`), em qualquer formato.
+
+- **E ele passou a dizer QUEM está na porta**, pela pasta do processo
+  (`/proc/PID/cwd`) — o nome não serve, porque todos os sites do servidor são
+  `node server.js` com o mesmo usuário. Três casos: o próprio serviço (segue),
+  este mesmo site rodando fora do systemd (manda encerrar o PID), ou um vizinho
+  (manda trocar de porta e **não** encerrar).
+
+  O caso do meio foi o que aconteceu: um `node server.js` rodado à mão
+  segurava a porta, o serviço entrava em laço de `EADDRINUSE`, e o `/saude`
+  respondia do processo errado — parecendo que estava tudo bem.
+
+- **Quando o journal já diz a causa, o script diz primeiro.** A lista genérica
+  mandou procurar pasta faltando e versão do Node num erro que era porta.
+
+- **O site escutava em todas as interfaces.** `listen(PORT)` sem endereço fazia
+  o Node responder direto em `http://<IP-do-servidor>:5184` — por fora do
+  nginx, sem TLS e sem os cabeçalhos dele. O login do painel trafegaria por
+  ali em texto puro. Agora escuta só em `127.0.0.1`, e a unit declara `HOST`.
+
 ## 1.1.1 — 09/09/2026
 
 **Corrigido — dois defeitos da própria conferência, achados testando a VIRADA**
