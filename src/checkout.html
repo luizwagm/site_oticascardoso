@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0a0e0c">
+  <meta name="color-scheme" content="dark">
+
+  <title>Checkout | Óticas Cardoso</title>
+  <meta name="description" content="Finalize seu pedido na Óticas Cardoso: entrega para todo o Brasil ou retirada na loja em Caruaru-PE.">
+  <meta name="robots" content="noindex, follow">
+  <link rel="canonical" href="https://oticascardoso.com/checkout/">
+
+  <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://images.unsplash.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,600;0,700;1,700&family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="/assets/css/styles.css">
+  <script type="module" src="/assets/js/main.js"></script>
+  <script type="module" src="/assets/js/checkout.js"></script>
+</head>
+
+<body>
+  <a class="skip-link" href="#main">Pular para o conteúdo</a>
+
+  <header class="site-header">
+    <div class="container site-header__inner">
+      <a class="brand" href="/" aria-label="Óticas Cardoso — início">
+        <img class="brand__logo" src="/assets/img/mark-ink.svg" width="49" height="34" alt=""><span class="brand__name">Óticas Cardoso</span>
+      </a>
+      <nav class="nav" id="primary-nav" aria-label="Navegação principal">
+        <a class="nav__link" href="/">Início</a>
+        <a class="nav__link" href="/loja/">Loja</a>
+        <a class="nav__link" href="/#contato">Contato</a>
+      </nav>
+      <div class="header__actions">
+        <a class="btn btn--ghost btn--sm btn--desktop" href="/loja/">← Continuar comprando</a>
+        <button class="nav-toggle" aria-label="Abrir menu" aria-expanded="false" aria-controls="primary-nav">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="container" style="padding-top:var(--sp-lg)">
+      <nav aria-label="Trilha de navegação">
+        <ol class="breadcrumb" role="list">
+          <li><a href="/">Início</a></li>
+          <li><a href="/loja/">Loja</a></li>
+          <li>Checkout</li>
+        </ol>
+      </nav>
+      <h1 class="section__title" style="font-style:italic">Finalizar <em style="color:var(--neon)">pedido</em></h1>
+    </div>
+
+    <!-- Carrinho vazio -->
+    <div class="container co-empty" id="co-empty" hidden>
+      <p class="section__lead" style="margin-bottom:var(--sp-lg)">Sua sacola está vazio. Bora equipar? 👓</p>
+      <a class="btn btn--neon" href="/loja/">Ir para a loja</a>
+    </div>
+
+    <!-- Sucesso -->
+    <div class="container co-success" id="co-success">
+      <p class="eyebrow" style="justify-content:center">Pedido enviado</p>
+      <h2 class="section__title" style="font-style:italic">Recebemos o seu <em style="color:var(--neon)">pedido</em>!</h2>
+      <p class="section__lead" style="max-width:52ch;margin-inline:auto">Abrimos o WhatsApp com o resumo — é só enviar a mensagem que a equipe confirma o pagamento e o envio. 👓</p>
+      <div class="mt-xl"><a class="btn btn--neon" href="/loja/">Voltar para a loja</a></div>
+    </div>
+
+    <!-- Checkout -->
+    <div class="container checkout" id="co-wrap">
+      <div>
+        <div class="step-title"><span class="step-num">1</span> Itens do pedido</div>
+        <div class="co-list" id="co-list" aria-live="polite"></div>
+
+        <div class="step-title"><span class="step-num">2</span> Seus dados</div>
+        <form class="form-card" id="co-form" novalidate>
+          <div class="form-grid">
+            <div class="form-grid form-grid--2">
+              <div class="field"><label for="nome">Nome completo <span class="req">*</span></label><input type="text" id="nome" name="nome" autocomplete="name" required></div>
+              <div class="field"><label for="whatsapp">WhatsApp <span class="req">*</span></label><input type="tel" id="whatsapp" name="whatsapp" inputmode="tel" autocomplete="tel" required></div>
+            </div>
+            <div class="field"><label for="email">E-mail</label><input type="email" id="email" name="email" autocomplete="email"></div>
+          </div>
+        </form>
+
+        <div class="step-title"><span class="step-num">3</span> Entrega</div>
+        <div class="form-card">
+          <div class="opts" id="ship-opts">
+            <label class="opt">
+              <input type="radio" name="entrega" value="envio" checked>
+              <span><span class="opt__label">Receber em casa</span><br><span class="opt__desc">Frete R$ 19,90 · <b style="color:var(--neon)">grátis acima de R$ 299</b> · todo o Brasil</span></span>
+            </label>
+            <label class="opt">
+              <input type="radio" name="entrega" value="retirada">
+              <span><span class="opt__label">Retirar na loja — grátis</span><br><span class="opt__desc">Caruaru-PE · pronto em até 2h úteis</span></span>
+            </label>
+          </div>
+          <div class="form-grid form-grid--2 mt-xl" id="address-box" style="margin-top:1rem">
+            <div class="field"><label for="cep">CEP <span class="req">*</span></label><input type="text" id="cep" name="cep" inputmode="numeric" autocomplete="postal-code" placeholder="00000-000"></div>
+            <div class="field"><label for="cidade">Cidade/UF <span class="req">*</span></label><input type="text" id="cidade" name="cidade" autocomplete="address-level2"></div>
+            <div class="field" style="grid-column:1/-1"><label for="endereco">Endereço e número <span class="req">*</span></label><input type="text" id="endereco" name="endereco" autocomplete="street-address"></div>
+          </div>
+        </div>
+
+        <div class="step-title"><span class="step-num">4</span> Pagamento</div>
+        <div class="form-card">
+          <div class="opts">
+            <label class="opt">
+              <input type="radio" name="pagamento" value="Pix" checked>
+              <span><span class="opt__label">Pix</span><br><span class="opt__desc">Aprovação na hora — chave enviada no WhatsApp</span></span>
+            </label>
+            <label class="opt">
+              <input type="radio" name="pagamento" value="Cartão de crédito">
+              <span><span class="opt__label">Cartão de crédito</span><br><span class="opt__desc">Até 6x — link de pagamento no WhatsApp</span></span>
+            </label>
+            <label class="opt">
+              <input type="radio" name="pagamento" value="Combinar na loja">
+              <span><span class="opt__label">Pagar na retirada</span><br><span class="opt__desc">Dinheiro, Pix ou cartão na loja física</span></span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <aside class="summary" aria-label="Resumo do pedido">
+        <h2 class="summary__title">Resumo</h2>
+        <div class="field" style="margin-bottom:var(--sp-md)">
+          <label for="coupon">Cupom</label>
+          <div class="field-group">
+            <input type="text" id="coupon" placeholder="Ex.: CARDOSO10">
+            <button type="button" class="btn btn--ghost btn--sm" id="coupon-btn">Aplicar</button>
+          </div>
+          <span class="pill-note" id="coupon-note" hidden></span>
+        </div>
+        <div class="summary__divider"></div>
+        <div class="summary__row"><span>Subtotal</span><span id="sum-subtotal">R$ 0,00</span></div>
+        <div class="summary__row" id="ship-row"><span>Frete</span><span id="sum-ship">—</span></div>
+        <div class="summary__row" id="disc-row" hidden><span>Desconto</span><span id="sum-disc"></span></div>
+        <div class="summary__divider"></div>
+        <div class="summary__total"><span>Total</span><strong id="sum-total">R$ 0,00</strong></div>
+        <button class="btn btn--neon btn--block" id="place-order" style="margin-top:var(--sp-lg)">Fechar pedido</button>
+        <p class="cart-note">Demonstração — o pedido é confirmado pelo WhatsApp. Pagamento online em breve.</p>
+      </aside>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer__bottom" style="border-top:none;padding-top:0">
+        <p>© <span id="year">2026</span> Óticas Cardoso · CNPJ {{CNPJ}}</p>
+        <a class="dev-credit" href="https://luizaugust.me" target="_blank" rel="noopener" title="Sites, sistemas e apps sob medida">
+          <svg viewBox="0 0 100 100" width="15" height="15" fill="currentColor" aria-hidden="true"><rect x="17" y="42" width="10" height="34" rx="4.5"/><rect x="17" y="74" width="66" height="8" rx="4"/><rect x="33" y="50" width="10" height="24" rx="4.5"/><rect x="47" y="21" width="10" height="53" rx="4.5"/><rect x="61" y="38" width="10" height="36" rx="4.5"/><rect x="75" y="55" width="8" height="19" rx="4"/><path d="M52 4 L54.7 10.4 L61 13 L54.7 15.6 L52 22 L49.3 15.6 L43 13 L49.3 10.4 Z"/></svg>
+          <span>Desenvolvido por <b>LA&nbsp;Software&nbsp;House</b></span>
+        </a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,91 @@
+[Unit]
+Description=Óticas Cardoso — site, loja e painel
+Documentation=file:///var/www/projetos/Oticas-Cardoso/SUBIR.md
+After=network-online.target
+Wants=network-online.target
+
+# ==========================================================================
+# ESTA LINHA FICA NO [Unit], E NÃO NO [Service]
+#
+# Desde o systemd 229 o limite de reinícios pertence à seção [Unit]. Posto em
+# [Service] ele não dá erro: o systemd escreve "Unknown key name … ignoring" no
+# journal e SEGUE — ou seja, a proteção simplesmente não existe, e ninguém
+# percebe até o serviço desistir de reiniciar de madrugada.
+#
+# Zero = não desiste nunca.
+# ==========================================================================
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+User=deploy
+Group=deploy
+WorkingDirectory=/var/www/projetos/Oticas-Cardoso
+Environment=NODE_ENV=production
+Environment=PORT=5184
+
+# O endereço público (canonical, JSON-LD, sitemap, robots) vive FORA do
+# repositório, no .env que o criar-site.sh escreve. O `-` faz o serviço subir
+# mesmo sem o arquivo — e aí valem os padrões do lib/endereco.js, que apontam
+# para o subdomínio de aprovação. Errar para o lado de "fora do índice" é o
+# lado seguro do erro.
+EnvironmentFile=-/var/www/projetos/Oticas-Cardoso/.env
+
+ExecStart=/usr/bin/node server.js
+
+Restart=always
+RestartSec=3
+
+# ==========================================================================
+# CONTENÇÃO — e por que a lista abaixo é comprida
+#
+# Este site não gera as páginas a cada pedido: ele as ESCREVE EM DISCO quando
+# alguém clica em "Publicar" no painel. O publish() reescreve o index.html, o
+# sitemap.xml, o config.js, a /loja/, o /checkout/ e uma pasta por produto
+# dentro de /produto/.
+#
+# Seria mais curto liberar a raiz inteira do projeto. Não faço isso de
+# propósito: com a raiz gravável, uma falha no código conseguiria reescrever o
+# PRÓPRIO server.js — e aí o ProtectSystem=strict vira enfeite. A lista abaixo
+# libera exatamente o que o publish precisa e deixa `server.js`, `lib/`, `src/`
+# e `admin/` somente-leitura.
+#
+# O `-` na frente de cada caminho NÃO é enfeite: sem ele, uma pasta que não
+# existe derruba o serviço com `226/NAMESPACE` e "Failed to set up mount
+# namespacing" — mensagem que não menciona em lugar nenhum qual pasta falta. E
+# o processo não consegue criá-la sozinho, porque o pai está somente-leitura.
+#
+# NÃO existe MemoryDenyWriteExecute aqui, e é DE PROPÓSITO: essa trava mata o
+# compilador do V8 com "5/TRAP" alguns segundos depois de subir. O sintoma
+# parece queda de rede e já custou uma tarde em outro projeto do parque.
+# ==========================================================================
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+
+# O banco (SQLite escreve três arquivos: .db, .db-wal, .db-shm — a permissão
+# tem de ser da PASTA, não do arquivo).
+ReadWritePaths=-/var/www/projetos/Oticas-Cardoso/data
+
+# As páginas que o publish reescreve.
+ReadWritePaths=-/var/www/projetos/Oticas-Cardoso/loja
+ReadWritePaths=-/var/www/projetos/Oticas-Cardoso/produto
+ReadWritePaths=-/var/www/projetos/Oticas-Cardoso/checkout
+
+# O config.js (número do WhatsApp) e as fotos enviadas pelo painel.
+ReadWritePaths=-/var/www/projetos/Oticas-Cardoso/assets/js
+ReadWritePaths=-/var/www/projetos/Oticas-Cardoso/assets/img/uploads
+
+# Os dois arquivos da raiz. Aqui é ARQUIVO e não pasta, de propósito: liberar
+# a raiz inteira daria ao processo o direito de reescrever o próprio código.
+ReadWritePaths=-/var/www/projetos/Oticas-Cardoso/index.html
+ReadWritePaths=-/var/www/projetos/Oticas-Cardoso/sitemap.xml
+
+SyslogIdentifier=oticascardoso
+
+[Install]
+WantedBy=multi-user.target

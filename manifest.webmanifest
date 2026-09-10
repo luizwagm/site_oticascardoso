@@ -1,0 +1,14 @@
+{
+  "name": "Óticas Cardoso",
+  "short_name": "Cardoso",
+  "description": "Óculos, lentes e exame de vista com tradição e atendimento humano. Caruaru-PE e todo o Brasil.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#16181d",
+  "theme_color": "#16181d",
+  "lang": "pt-BR",
+  "icons": [
+    { "src": "assets/img/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

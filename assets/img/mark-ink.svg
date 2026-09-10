@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 44" role="img" aria-label="Óticas Cardoso">
+  <g fill="none" stroke="#16181d" stroke-width="3.6" stroke-linecap="round">
+    <path d="M6 24 C 16 8, 48 8, 58 24"/>
+    <path d="M10 22 C 18 34, 46 34, 54 22"/>
+  </g>
+  <circle cx="32" cy="23" r="6.5" fill="#16181d"/>
+</svg>

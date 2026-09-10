@@ -1,0 +1,13 @@
+{
+  "name": "oticas-cardoso",
+  "version": "1.1.1",
+  "private": true,
+  "description": "Óticas Cardoso — site, loja e painel. Node puro com node:sqlite, zero dependências.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=22.5.0"
+  }
+}
